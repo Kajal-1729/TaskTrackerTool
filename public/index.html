@@ -4,6 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Task Tracker </title>
+    <script>
+      const savedTheme = localStorage.getItem("taskTrackerTheme");
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      document.documentElement.dataset.theme = savedTheme || (prefersDark ? "dark" : "light");
+    </script>
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
@@ -13,6 +18,12 @@
           <p class="eyebrow">Progress workspace</p>
           <h1 id="page-title">Task Tracker Tool</h1>
           <p class="hero-copy">Plan future work, update assignments, and close completed tasks from one focused dashboard.</p>
+          <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to dark mode" aria-pressed="false">
+            <span class="theme-toggle-track" aria-hidden="true">
+              <span class="theme-toggle-thumb"></span>
+            </span>
+            <span id="themeToggleText">Dark mode</span>
+          </button>
         </div>
         <div class="progress-ring" aria-label="Completion progress">
           <span id="progressPercent">0%</span>
@@ -86,7 +97,7 @@
               <p class="eyebrow">Live list</p>
               <h2 id="boardTitle">Tasks</h2>
             </div>
-            <button class="icon-button" id="refreshButton" type="button" title="Refresh tasks" aria-label="Refresh tasks">↻</button>
+            <button class="icon-button" id="refreshButton" type="button" title="Refresh tasks" aria-label="Refresh tasks">&#8635;</button>
           </div>
 
           <div class="controls" aria-label="Task filters">

@@ -3,13 +3,73 @@
   --muted: #64707d;
   --line: #d9e0e7;
   --surface: #ffffff;
+  --surface-strong: #ffffff;
+  --surface-soft: #f7faf9;
+  --input: #fbfcfd;
+  --input-focus: #ffffff;
   --page: #f4f7f6;
+  --page-glow: rgba(15, 118, 110, 0.08);
   --teal: #0f766e;
   --teal-dark: #115e59;
   --amber: #b7791f;
   --rose: #be445a;
   --blue: #2563eb;
   --shadow: 0 18px 50px rgba(23, 32, 42, 0.12);
+  --panel-shadow: 0 10px 32px rgba(23, 32, 42, 0.08);
+  --field-border: #cfd8df;
+  --button-soft: #eef8f7;
+  --button-soft-border: #b9dfdc;
+  --icon-surface: #f4fbfa;
+  --icon-border: #cae5e2;
+  --pill: #eef2f6;
+  --pill-text: #334150;
+  --empty: #f8fafb;
+  --empty-border: #c4ced8;
+  --high-pill: #fde8ed;
+  --high-pill-text: #8f2038;
+  --medium-pill: #fff3d5;
+  --medium-pill-text: #7a4a05;
+  --low-pill: #def7f4;
+  --low-pill-text: #0d5c56;
+  --toast: #17202a;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --ink: #e7eef5;
+  --muted: #aeb9c5;
+  --line: #334454;
+  --surface: #192532;
+  --surface-strong: #223141;
+  --surface-soft: #13202b;
+  --input: #101a24;
+  --input-focus: #162333;
+  --page: #0e151d;
+  --page-glow: rgba(20, 184, 166, 0.12);
+  --teal: #2dd4bf;
+  --teal-dark: #5eead4;
+  --amber: #f5b84b;
+  --rose: #fb7185;
+  --blue: #60a5fa;
+  --shadow: 0 20px 60px rgba(0, 0, 0, 0.42);
+  --panel-shadow: 0 14px 34px rgba(0, 0, 0, 0.34);
+  --field-border: #46586a;
+  --button-soft: #102f32;
+  --button-soft-border: #1e6968;
+  --icon-surface: #102f32;
+  --icon-border: #1e6968;
+  --pill: #263646;
+  --pill-text: #d4dee8;
+  --empty: #13202b;
+  --empty-border: #3b4d5d;
+  --high-pill: #452432;
+  --high-pill-text: #fecdd8;
+  --medium-pill: #3f3219;
+  --medium-pill-text: #fde68a;
+  --low-pill: #123833;
+  --low-pill-text: #99f6e4;
+  --toast: #0f1720;
+  color-scheme: dark;
 }
 
 * {
@@ -21,7 +81,7 @@ body {
   min-height: 100vh;
   color: var(--ink);
   background:
-    linear-gradient(180deg, rgba(15, 118, 110, 0.08), rgba(244, 247, 246, 0) 360px),
+    linear-gradient(180deg, var(--page-glow), rgba(244, 247, 246, 0) 360px),
     var(--page);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
@@ -92,6 +152,50 @@ h2 {
   line-height: 1.6;
 }
 
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  margin-top: 18px;
+  padding: 7px 12px 7px 8px;
+  color: #f8fbfb;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 999px;
+  font-weight: 900;
+  backdrop-filter: blur(12px);
+}
+
+.theme-toggle:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.56);
+  outline-offset: 3px;
+}
+
+.theme-toggle-track {
+  position: relative;
+  width: 44px;
+  height: 26px;
+  background: rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+}
+
+.theme-toggle-thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 18px;
+  aspect-ratio: 1;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 180ms ease;
+}
+
+:root[data-theme="dark"] .theme-toggle-thumb {
+  transform: translateX(18px);
+}
+
 .progress-ring {
   display: grid;
   place-items: center;
@@ -152,7 +256,7 @@ h2 {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 8px;
-  box-shadow: 0 10px 32px rgba(23, 32, 42, 0.08);
+  box-shadow: var(--panel-shadow);
 }
 
 .task-editor {
@@ -168,7 +272,7 @@ h2 {
 label {
   display: block;
   margin: 14px 0 7px;
-  color: #26313c;
+  color: var(--ink);
   font-size: 0.9rem;
   font-weight: 800;
 }
@@ -180,8 +284,8 @@ textarea {
   min-height: 44px;
   padding: 10px 12px;
   color: var(--ink);
-  background: #fbfcfd;
-  border: 1px solid #cfd8df;
+  background: var(--input);
+  border: 1px solid var(--field-border);
   border-radius: 8px;
   outline: none;
   transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
@@ -194,7 +298,7 @@ textarea {
 input:focus,
 select:focus,
 textarea:focus {
-  background: #ffffff;
+  background: var(--input-focus);
   border-color: var(--teal);
   box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.14);
 }
@@ -233,8 +337,8 @@ textarea:focus {
 .ghost-button {
   padding: 0 16px;
   color: var(--teal-dark);
-  background: #eef8f7;
-  border-color: #b9dfdc;
+  background: var(--button-soft);
+  border-color: var(--button-soft-border);
 }
 
 .task-board {
@@ -253,8 +357,8 @@ textarea:focus {
   width: 44px;
   flex: 0 0 44px;
   color: var(--teal-dark);
-  background: #f4fbfa;
-  border-color: #cae5e2;
+  background: var(--icon-surface);
+  border-color: var(--icon-border);
   font-size: 1.2rem;
 }
 
@@ -276,7 +380,7 @@ textarea:focus {
   gap: 14px;
   align-items: start;
   padding: 16px;
-  background: #ffffff;
+  background: var(--surface-strong);
   border: 1px solid var(--line);
   border-left: 5px solid var(--blue);
   border-radius: 8px;
@@ -295,7 +399,7 @@ textarea:focus {
 }
 
 .task-item.completed {
-  background: #f7faf9;
+  background: var(--surface-soft);
 }
 
 .task-item.completed .task-title {
@@ -309,8 +413,8 @@ textarea:focus {
   width: 34px;
   aspect-ratio: 1;
   color: #ffffff;
-  background: #ffffff;
-  border: 2px solid #a7b3bf;
+  background: var(--surface-strong);
+  border: 2px solid var(--field-border);
   border-radius: 50%;
   font-weight: 900;
 }
@@ -349,26 +453,26 @@ textarea:focus {
   align-items: center;
   min-height: 26px;
   padding: 4px 9px;
-  color: #334150;
-  background: #eef2f6;
+  color: var(--pill-text);
+  background: var(--pill);
   border-radius: 999px;
   font-size: 0.8rem;
   font-weight: 800;
 }
 
 .meta-pill.high {
-  color: #8f2038;
-  background: #fde8ed;
+  color: var(--high-pill-text);
+  background: var(--high-pill);
 }
 
 .meta-pill.medium {
-  color: #7a4a05;
-  background: #fff3d5;
+  color: var(--medium-pill-text);
+  background: var(--medium-pill);
 }
 
 .meta-pill.low {
-  color: #0d5c56;
-  background: #def7f4;
+  color: var(--low-pill-text);
+  background: var(--low-pill);
 }
 
 .task-actions {
@@ -379,9 +483,9 @@ textarea:focus {
 .task-actions button {
   width: 38px;
   aspect-ratio: 1;
-  color: #26313c;
-  background: #f7f9fb;
-  border: 1px solid #d8e0e7;
+  color: var(--ink);
+  background: var(--input);
+  border: 1px solid var(--line);
   border-radius: 8px;
   font-weight: 900;
 }
@@ -395,8 +499,8 @@ textarea:focus {
   padding: 28px;
   color: var(--muted);
   text-align: center;
-  background: #f8fafb;
-  border: 1px dashed #c4ced8;
+  background: var(--empty);
+  border: 1px dashed var(--empty-border);
   border-radius: 8px;
 }
 
@@ -407,7 +511,7 @@ textarea:focus {
   max-width: min(360px, calc(100vw - 40px));
   padding: 13px 15px;
   color: #ffffff;
-  background: #17202a;
+  background: var(--toast);
   border-radius: 8px;
   box-shadow: var(--shadow);
   opacity: 0;

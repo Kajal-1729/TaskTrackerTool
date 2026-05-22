@@ -32,6 +32,8 @@ const elements = {
   completedCount: document.querySelector("#completedCount"),
   highPriorityCount: document.querySelector("#highPriorityCount"),
   progressPercent: document.querySelector("#progressPercent"),
+  themeToggle: document.querySelector("#themeToggle"),
+  themeToggleText: document.querySelector("#themeToggleText"),
   toast: document.querySelector("#toast")
 };
 
@@ -87,6 +89,30 @@ function showToast(message) {
   }, 2400);
 }
 
+function getPreferredTheme() {
+  const savedTheme = localStorage.getItem("taskTrackerTheme");
+  if (savedTheme === "dark" || savedTheme === "light") return savedTheme;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function applyTheme(theme) {
+  const isDark = theme === "dark";
+
+  document.documentElement.dataset.theme = theme;
+  elements.themeToggle.setAttribute("aria-pressed", String(isDark));
+  elements.themeToggle.setAttribute("aria-label", isDark ? "Switch to light mode" : "Switch to dark mode");
+  elements.themeToggleText.textContent = isDark ? "Light mode" : "Dark mode";
+}
+
+function toggleTheme() {
+  const currentTheme = document.documentElement.dataset.theme || getPreferredTheme();
+  const nextTheme = currentTheme === "dark" ? "light" : "dark";
+
+  localStorage.setItem("taskTrackerTheme", nextTheme);
+  applyTheme(nextTheme);
+  showToast(`${nextTheme === "dark" ? "Dark" : "Light"} mode enabled.`);
+}
+
 function getFilteredTasks() {
   const search = state.filters.search.toLowerCase();
 
@@ -131,7 +157,7 @@ function taskTemplate(task) {
   return `
     <article class="task-item priority-${escapeHtml(task.priority)} ${task.completed ? "completed" : ""}">
       <button class="complete-toggle" type="button" data-action="toggle" data-id="${escapeHtml(task.id)}" aria-label="${task.completed ? "Reopen task" : "Complete task"}">
-        ${task.completed ? "✓" : ""}
+        ${task.completed ? "&#10003;" : ""}
       </button>
       <div class="task-content">
         <h3 class="task-title">${escapeHtml(task.title)}</h3>
@@ -144,8 +170,8 @@ function taskTemplate(task) {
         </div>
       </div>
       <div class="task-actions">
-        <button type="button" data-action="edit" data-id="${escapeHtml(task.id)}" title="Edit task" aria-label="Edit task">✎</button>
-        <button type="button" data-action="delete" data-id="${escapeHtml(task.id)}" title="Delete task" aria-label="Delete task">×</button>
+        <button type="button" data-action="edit" data-id="${escapeHtml(task.id)}" title="Edit task" aria-label="Edit task">&#9998;</button>
+        <button type="button" data-action="delete" data-id="${escapeHtml(task.id)}" title="Delete task" aria-label="Delete task">&times;</button>
       </div>
     </article>
   `;
@@ -259,6 +285,8 @@ async function handleTaskClick(event) {
 }
 
 function bindEvents() {
+  elements.themeToggle.addEventListener("click", toggleTheme);
+
   elements.taskForm.addEventListener("submit", (event) => {
     handleSubmit(event).catch((error) => showToast(error.message));
   });
@@ -291,5 +319,6 @@ function bindEvents() {
   });
 }
 
+applyTheme(getPreferredTheme());
 bindEvents();
 loadTasks().catch((error) => showToast(error.message));

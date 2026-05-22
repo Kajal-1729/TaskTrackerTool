@@ -79,14 +79,26 @@ function readBody(req) {
       }
 
       try {
+        const contentType = req.headers["content-type"] || "";
+
+        if (contentType.includes("application/x-www-form-urlencoded")) {
+          resolve(Object.fromEntries(new URLSearchParams(body)));
+          return;
+        }
+
         resolve(JSON.parse(body));
       } catch {
-        reject(new Error("Invalid JSON request body."));
+        reject(new Error("Invalid request body."));
       }
     });
 
     req.on("error", reject);
   });
+}
+
+function isFormSubmission(req) {
+  const contentType = req.headers["content-type"] || "";
+  return contentType.includes("application/x-www-form-urlencoded");
 }
 
 function normalizeTaskInput(input) {
@@ -144,6 +156,13 @@ async function handleApi(req, res, url) {
 
     const updatedTasks = [task, ...tasks];
     writeTasks(updatedTasks);
+
+    if (isFormSubmission(req)) {
+      res.writeHead(303, { Location: "/" });
+      res.end();
+      return;
+    }
+
     sendJson(res, 201, task);
     return;
   }

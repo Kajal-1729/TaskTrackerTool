@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Task Tracker </title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero-band" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">Progress workspace</p>
+          <h1 id="page-title">Task Tracker Tool</h1>
+          <p class="hero-copy">Plan future work, update assignments, and close completed tasks from one focused dashboard.</p>
+        </div>
+        <div class="progress-ring" aria-label="Completion progress">
+          <span id="progressPercent">0%</span>
+          <small>Complete</small>
+        </div>
+      </section>
+
+      <section class="stats-grid" aria-label="Task summary">
+        <div class="stat-block">
+          <span id="totalCount">0</span>
+          <p>Total tasks</p>
+        </div>
+        <div class="stat-block">
+          <span id="pendingCount">0</span>
+          <p>Pending</p>
+        </div>
+        <div class="stat-block">
+          <span id="completedCount">0</span>
+          <p>Completed</p>
+        </div>
+        <div class="stat-block">
+          <span id="highPriorityCount">0</span>
+          <p>High priority</p>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <aside class="task-editor" aria-labelledby="formTitle">
+          <div class="section-heading">
+            <p class="eyebrow">Task details</p>
+            <h2 id="formTitle">Add Task</h2>
+          </div>
+
+          <form id="taskForm">
+            <input type="hidden" id="taskId" />
+
+            <label for="title">Title</label>
+            <input id="title" name="title" type="text" maxlength="90" placeholder="Example: Review sprint goals" required />
+
+            <label for="description">Description</label>
+            <textarea id="description" name="description" rows="4" maxlength="400" placeholder="Add clear notes or next steps"></textarea>
+
+            <div class="field-row">
+              <div>
+                <label for="assignee">Assignee</label>
+                <input id="assignee" name="assignee" type="text" maxlength="60" placeholder="Person or team" />
+              </div>
+              <div>
+                <label for="dueDate">Due date</label>
+                <input id="dueDate" name="dueDate" type="date" />
+              </div>
+            </div>
+
+            <label for="priority">Priority</label>
+            <select id="priority" name="priority">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+
+            <div class="form-actions">
+              <button class="primary-button" type="submit" id="saveButton">Save Task</button>
+              <button class="ghost-button" type="button" id="cancelEditButton" hidden>Cancel</button>
+            </div>
+          </form>
+        </aside>
+
+        <section class="task-board" aria-labelledby="boardTitle">
+          <div class="board-topline">
+            <div class="section-heading">
+              <p class="eyebrow">Live list</p>
+              <h2 id="boardTitle">Tasks</h2>
+            </div>
+            <button class="icon-button" id="refreshButton" type="button" title="Refresh tasks" aria-label="Refresh tasks">↻</button>
+          </div>
+
+          <div class="controls" aria-label="Task filters">
+            <input id="searchInput" type="search" placeholder="Search title, notes, assignee" />
+            <select id="statusFilter" aria-label="Filter by status">
+              <option value="all">All status</option>
+              <option value="pending">Pending</option>
+              <option value="completed">Completed</option>
+            </select>
+            <select id="priorityFilter" aria-label="Filter by priority">
+              <option value="all">All priorities</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+
+          <div id="taskList" class="task-list" aria-live="polite"></div>
+          <p id="emptyState" class="empty-state" hidden>No matching tasks yet.</p>
+        </section>
+      </section>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="/app.js"></script>
+  </body>
+</html>

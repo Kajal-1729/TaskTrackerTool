@@ -1,0 +1,38 @@
+[
+  {
+    "id": "28707653-3425-4715-a053-83f9c84851d7",
+    "title": "learn Md file",
+    "description": "Get to know what is md file",
+    "assignee": "Gyan",
+    "dueDate": "2026-05-26",
+    "priority": "medium",
+    "completed": true,
+    "createdAt": "2026-05-22T08:54:46.234Z",
+    "updatedAt": "2026-05-22T09:04:29.384Z",
+    "completedAt": "2026-05-22T08:55:11.504Z"
+  },
+  {
+    "id": "sample-1",
+    "title": "watch episode-1 of Suits web series",
+    "description": "Watch Suits web-series and write summary of that.",
+    "assignee": "Kajal",
+    "priority": "medium",
+    "dueDate": "2026-05-26",
+    "completed": false,
+    "createdAt": "2026-05-22T08:00:00.000Z",
+    "updatedAt": "2026-05-22T08:55:04.314Z",
+    "completedAt": null
+  },
+  {
+    "id": "sample-2",
+    "title": "Build frontend task dashboard",
+    "description": "Create a clean UI where users can add, edit, search, filter, and complete tasks.",
+    "assignee": "Frontend",
+    "priority": "medium",
+    "dueDate": "2026-05-30",
+    "completed": true,
+    "createdAt": "2026-05-22T08:10:00.000Z",
+    "updatedAt": "2026-05-22T07:32:56.615Z",
+    "completedAt": "2026-05-22T07:32:56.615Z"
+  }
+]

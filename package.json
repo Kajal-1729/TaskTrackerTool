@@ -1,0 +1,22 @@
+{
+  "name": "task-manager-tool",
+  "version": "1.0.0",
+  "description": "A full-stack task manager with add, edit, complete, filter, and progress tracking features.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "task-manager",
+    "todo",
+    "node",
+    "frontend",
+    "backend"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}

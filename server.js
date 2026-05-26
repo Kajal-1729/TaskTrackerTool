@@ -2,12 +2,16 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const { randomUUID } = require("crypto");
+const { Pool } = require("pg");
 
 const PORT = process.env.PORT || 3000;
 const ROOT_DIR = __dirname;
 const PUBLIC_DIR = path.join(ROOT_DIR, "public");
-const DATA_DIR = path.join(ROOT_DIR, "data");
-const TASKS_FILE = path.join(DATA_DIR, "tasks.json");
+const DATABASE_URL = process.env.DATABASE_URL;
+const pool = new Pool({
+  connectionString: DATABASE_URL,
+  ssl: process.env.DATABASE_SSL === "true" ? { rejectUnauthorized: false } : false
+});
 
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -20,33 +24,6 @@ const MIME_TYPES = {
   ".jpeg": "image/jpeg",
   ".ico": "image/x-icon"
 };
-
-function ensureDataFile() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
-
-  if (!fs.existsSync(TASKS_FILE)) {
-    fs.writeFileSync(TASKS_FILE, "[]\n", "utf8");
-  }
-}
-
-function readTasks() {
-  ensureDataFile();
-  const raw = fs.readFileSync(TASKS_FILE, "utf8").trim();
-  if (!raw) return [];
-
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
-}
-
-function writeTasks(tasks) {
-  ensureDataFile();
-  fs.writeFileSync(TASKS_FILE, `${JSON.stringify(tasks, null, 2)}\n`, "utf8");
-}
 
 function sendJson(res, statusCode, payload) {
   res.writeHead(statusCode, {
@@ -118,20 +95,60 @@ function normalizeTaskInput(input) {
   };
 }
 
-function sortTasks(tasks) {
-  return [...tasks].sort((a, b) => {
-    if (a.completed !== b.completed) return a.completed ? 1 : -1;
-    return new Date(b.updatedAt) - new Date(a.updatedAt);
-  });
+function mapTask(row) {
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    assignee: row.assignee,
+    priority: row.priority,
+    dueDate: row.due_date instanceof Date ? row.due_date.toISOString().slice(0, 10) : row.due_date || "",
+    completed: row.completed,
+    createdAt: new Date(row.created_at).toISOString(),
+    updatedAt: new Date(row.updated_at).toISOString(),
+    completedAt: row.completed_at ? new Date(row.completed_at).toISOString() : null
+  };
+}
+
+function isValidTaskId(id) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
+}
+
+async function initializeDatabase() {
+  if (!DATABASE_URL) {
+    throw new Error("DATABASE_URL is required. Connect a Render Postgres database before starting the app.");
+  }
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS tasks (
+      id UUID PRIMARY KEY,
+      title VARCHAR(90) NOT NULL,
+      description VARCHAR(400) NOT NULL DEFAULT '',
+      assignee VARCHAR(60) NOT NULL DEFAULT '',
+      priority VARCHAR(10) NOT NULL DEFAULT 'medium'
+        CHECK (priority IN ('low', 'medium', 'high')),
+      due_date DATE,
+      completed BOOLEAN NOT NULL DEFAULT FALSE,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      completed_at TIMESTAMPTZ
+    )
+  `);
 }
 
 async function handleApi(req, res, url) {
-  const tasks = readTasks();
   const taskIdMatch = url.pathname.match(/^\/api\/tasks\/([^/]+)$/);
   const toggleMatch = url.pathname.match(/^\/api\/tasks\/([^/]+)\/toggle$/);
 
+  if (req.method === "GET" && url.pathname === "/api/health") {
+    await pool.query("SELECT 1");
+    sendJson(res, 200, { status: "ok", database: "connected" });
+    return;
+  }
+
   if (req.method === "GET" && url.pathname === "/api/tasks") {
-    sendJson(res, 200, sortTasks(tasks));
+    const result = await pool.query("SELECT * FROM tasks ORDER BY completed ASC, updated_at DESC");
+    sendJson(res, 200, result.rows.map(mapTask));
     return;
   }
 
@@ -144,18 +161,13 @@ async function handleApi(req, res, url) {
       return;
     }
 
-    const now = new Date().toISOString();
-    const task = {
-      id: randomUUID(),
-      ...input,
-      completed: false,
-      createdAt: now,
-      updatedAt: now,
-      completedAt: null
-    };
-
-    const updatedTasks = [task, ...tasks];
-    writeTasks(updatedTasks);
+    const result = await pool.query(
+      `INSERT INTO tasks (id, title, description, assignee, priority, due_date)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING *`,
+      [randomUUID(), input.title, input.description, input.assignee, input.priority, input.dueDate || null]
+    );
+    const task = mapTask(result.rows[0]);
 
     if (isFormSubmission(req)) {
       res.writeHead(303, { Location: "/" });
@@ -169,9 +181,8 @@ async function handleApi(req, res, url) {
 
   if (req.method === "PUT" && taskIdMatch) {
     const id = decodeURIComponent(taskIdMatch[1]);
-    const index = tasks.findIndex((task) => task.id === id);
 
-    if (index === -1) {
+    if (!isValidTaskId(id)) {
       sendError(res, 404, "Task not found.");
       return;
     }
@@ -184,51 +195,72 @@ async function handleApi(req, res, url) {
       return;
     }
 
-    const task = {
-      ...tasks[index],
-      ...input,
-      updatedAt: new Date().toISOString()
-    };
+    const result = await pool.query(
+      `UPDATE tasks
+       SET title = $2,
+           description = $3,
+           assignee = $4,
+           priority = $5,
+           due_date = $6,
+           updated_at = NOW()
+       WHERE id = $1
+       RETURNING *`,
+      [id, input.title, input.description, input.assignee, input.priority, input.dueDate || null]
+    );
 
-    tasks[index] = task;
-    writeTasks(tasks);
+    if (result.rowCount === 0) {
+      sendError(res, 404, "Task not found.");
+      return;
+    }
+
+    const task = mapTask(result.rows[0]);
     sendJson(res, 200, task);
     return;
   }
 
   if (req.method === "PATCH" && toggleMatch) {
     const id = decodeURIComponent(toggleMatch[1]);
-    const index = tasks.findIndex((task) => task.id === id);
 
-    if (index === -1) {
+    if (!isValidTaskId(id)) {
       sendError(res, 404, "Task not found.");
       return;
     }
 
-    const isCompleted = !tasks[index].completed;
-    const task = {
-      ...tasks[index],
-      completed: isCompleted,
-      updatedAt: new Date().toISOString(),
-      completedAt: isCompleted ? new Date().toISOString() : null
-    };
+    const result = await pool.query(
+      `UPDATE tasks
+       SET completed = NOT completed,
+           updated_at = NOW(),
+           completed_at = CASE WHEN NOT completed THEN NOW() ELSE NULL END
+       WHERE id = $1
+       RETURNING *`,
+      [id]
+    );
 
-    tasks[index] = task;
-    writeTasks(tasks);
+    if (result.rowCount === 0) {
+      sendError(res, 404, "Task not found.");
+      return;
+    }
+
+    const task = mapTask(result.rows[0]);
     sendJson(res, 200, task);
     return;
   }
 
   if (req.method === "DELETE" && taskIdMatch) {
     const id = decodeURIComponent(taskIdMatch[1]);
-    const filteredTasks = tasks.filter((task) => task.id !== id);
 
-    if (filteredTasks.length === tasks.length) {
+    if (!isValidTaskId(id)) {
       sendError(res, 404, "Task not found.");
       return;
     }
 
-    writeTasks(filteredTasks);
+    const result = await pool.query("DELETE FROM tasks WHERE id = $1 RETURNING id", [id]);
+
+    if (result.rowCount === 0) {
+      sendError(res, 404, "Task not found.");
+      return;
+    }
+
     sendJson(res, 200, { success: true });
     return;
   }
@@ -282,11 +314,30 @@ const server = http.createServer(async (req, res) => {
 
     serveStatic(req, res, url);
   } catch (error) {
-    sendError(res, 400, error.message || "Something went wrong.");
+    const clientErrors = new Set(["Request body is too large.", "Invalid request body."]);
+
+    if (clientErrors.has(error.message)) {
+      sendError(res, 400, error.message);
+      return;
+    }
+
+    console.error("Request failed:", error.message);
+    sendError(res, 500, "Unable to complete request.");
   }
 });
 
-ensureDataFile();
-server.listen(PORT, () => {
-  console.log(`Task Manager is running at http://localhost:${PORT}`);
+pool.on("error", (error) => {
+  console.error("Unexpected PostgreSQL error:", error.message);
 });
+
+initializeDatabase()
+  .then(() => {
+    server.listen(PORT, () => {
+      console.log(`Task Manager is running at http://localhost:${PORT}`);
+    });
+  })
+  .catch(async (error) => {
+    console.error(`Unable to start Task Manager: ${error.message}`);
+    await pool.end();
+    process.exit(1);
+  });

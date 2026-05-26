@@ -10,15 +10,17 @@ A full-stack task manager web application for tracking current work, completed w
 - Delete tasks.
 - Search and filter tasks by status and priority.
 - View progress statistics.
-- Persist tasks in `data/tasks.json`.
+- Persist tasks in PostgreSQL so saved work survives web-service redeploys.
 
 ## How To Start
 
 1. Install [Node.js](https://nodejs.org/) version 18 or newer.
-2. Open a terminal in this project folder.
-3. Run:
+2. Create a PostgreSQL database.
+3. Set the `DATABASE_URL` environment variable to its connection string.
+4. Open a terminal in this project folder and run:
 
 ```bash
+npm install
 npm start
 ```
 
@@ -39,7 +41,7 @@ http://localhost:3000
 │   ├── index.html
 │   └── styles.css
 ├── data/
-│   └── tasks.json
+│   └── tasks.json (legacy backup, not live storage)
 ├── package.json
 └── server.js
 ```
@@ -49,6 +51,7 @@ http://localhost:3000
 | Method | Endpoint | Purpose |
 | --- | --- | --- |
 | `GET` | `/api/tasks` | Fetch all tasks |
+| `GET` | `/api/health` | Confirm the database is connected |
 | `POST` | `/api/tasks` | Create a task |
 | `PUT` | `/api/tasks/:id` | Update a task |
 | `PATCH` | `/api/tasks/:id/toggle` | Complete or reopen a task |

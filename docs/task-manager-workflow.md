@@ -16,9 +16,9 @@ This starter project uses:
 
 - Frontend: HTML, CSS, and JavaScript
 - Backend: Node.js HTTP server
-- Storage: Local JSON file
+- Storage: PostgreSQL database
 
-This stack is simple for learning and does not require external packages. Later, the JSON file can be replaced with MongoDB, PostgreSQL, MySQL, or another database.
+PostgreSQL allows shared task data to survive web-service redeployments and restarts. In Render, the app connects through a `DATABASE_URL` environment variable.
 
 ### Step 3: Build The Minimum Viable Product
 
@@ -35,7 +35,7 @@ The first version should include:
 
 ### Step 4: Run The App
 
-From the project folder:
+Set `DATABASE_URL` to your PostgreSQL connection string, then from the project folder:
 
 ```bash
 npm start
@@ -75,7 +75,7 @@ Functional requirements describe what the system must do.
 | FR-07 | Search Tasks | User can search tasks by title, description, or assignee. |
 | FR-08 | Filter Tasks | User can filter tasks by status and priority. |
 | FR-09 | Progress Summary | User can view total, completed, pending, and completion percentage. |
-| FR-10 | Data Persistence | Tasks remain saved after refreshing the browser or restarting the server. |
+| FR-10 | Data Persistence | Tasks are stored in PostgreSQL and remain saved after browser refresh, service restart, or redeployment. |
 | FR-11 | Validation | Task title is required before saving. |
 | FR-12 | API Access | Frontend communicates with backend through REST API endpoints. |
 
@@ -87,14 +87,14 @@ Non-functional requirements describe how well the system should work.
 | --- | --- | --- |
 | NFR-01 | Usability | Interface should be simple, clear, responsive, and easy to use. |
 | NFR-02 | Performance | Task operations should feel fast for normal personal or small-team usage. |
-| NFR-03 | Reliability | Tasks should not disappear after page refresh because data is saved on the backend. |
-| NFR-04 | Maintainability | Code should be organized into frontend, backend, data, and documentation areas. |
-| NFR-05 | Scalability | The storage layer should be replaceable with a real database later. |
+| NFR-03 | Reliability | Tasks should not disappear after page refresh or redeployment because data is saved in PostgreSQL. |
+| NFR-04 | Maintainability | Code should be organized into frontend, backend, deployment configuration, and documentation areas. |
+| NFR-05 | Scalability | The database-backed storage should support moving to larger hosted PostgreSQL plans later. |
 | NFR-06 | Security | Backend should validate input and avoid exposing unnecessary local files. |
 | NFR-07 | Accessibility | UI should support keyboard usage, visible labels, good contrast, and readable focus states. |
 | NFR-08 | Responsiveness | Layout should work on desktop, tablet, and mobile screen sizes. |
 | NFR-09 | Compatibility | App should run in modern browsers and Node.js 18 or newer. |
-| NFR-10 | Recoverability | If the task data file is missing, the server should recreate it automatically. |
+| NFR-10 | Recoverability | The backend should automatically create the required `tasks` database table when connected. |
 
 ## 6. Task Data Model
 
@@ -124,6 +124,14 @@ GET /api/tasks
 ```
 
 Returns all saved tasks.
+
+### Health Check
+
+```text
+GET /api/health
+```
+
+Returns database connectivity status for deployment verification.
 
 ### Create Task
 
@@ -176,7 +184,7 @@ Removes a task permanently.
 - Reminder notifications
 - Drag-and-drop task ordering
 - Kanban board view
-- Real database integration
+- Authentication and per-user task visibility
 - Role-based permissions
 - Activity history
 

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Task Tracker </title>
+    <title>Task Tracker</title>
     <script>
       const savedTheme = localStorage.getItem("taskTrackerTheme");
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -12,22 +12,69 @@
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
-    <main class="app-shell">
+    <section class="auth-shell" id="authShell" hidden>
+      <div class="auth-hero">
+        <p class="eyebrow">Private and shared progress</p>
+        <h1>Task Tracker Tool</h1>
+        <p class="hero-copy">Sign in to manage your own work or collaborate with people in shared task lists.</p>
+        <button class="theme-toggle" id="authThemeToggle" type="button" aria-label="Switch theme">
+          <span class="theme-toggle-track" aria-hidden="true"><span class="theme-toggle-thumb"></span></span>
+          <span id="authThemeToggleText">Dark mode</span>
+        </button>
+      </div>
+
+      <div class="auth-panel">
+        <div class="auth-tabs" role="tablist" aria-label="Authentication">
+          <button class="tab-button active" id="loginTab" type="button" data-auth-tab="login">Login</button>
+          <button class="tab-button" id="registerTab" type="button" data-auth-tab="register">Register</button>
+        </div>
+
+        <form id="loginForm" class="auth-form">
+          <label for="loginEmail">Email</label>
+          <input id="loginEmail" type="email" autocomplete="email" required />
+
+          <label for="loginPassword">Password</label>
+          <input id="loginPassword" type="password" autocomplete="current-password" required />
+
+          <button class="primary-button" type="submit">Login</button>
+        </form>
+
+        <form id="registerForm" class="auth-form" hidden>
+          <label for="registerName">Name</label>
+          <input id="registerName" type="text" maxlength="80" autocomplete="name" required />
+
+          <label for="registerEmail">Email</label>
+          <input id="registerEmail" type="email" autocomplete="email" required />
+
+          <label for="registerPassword">Password</label>
+          <input id="registerPassword" type="password" minlength="8" maxlength="128" autocomplete="new-password" required />
+
+          <button class="primary-button" type="submit">Create Account</button>
+        </form>
+      </div>
+    </section>
+
+    <main class="app-shell" id="appShell" hidden>
       <section class="hero-band" aria-labelledby="page-title">
         <div>
           <p class="eyebrow">Progress workspace</p>
           <h1 id="page-title">Task Tracker Tool</h1>
-          <p class="hero-copy">Plan future work, update assignments, and close completed tasks from one focused dashboard.</p>
+          <p class="hero-copy" id="workspaceSubtitle">Your personal tasks are visible only to you.</p>
           <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to dark mode" aria-pressed="false">
-            <span class="theme-toggle-track" aria-hidden="true">
-              <span class="theme-toggle-thumb"></span>
-            </span>
+            <span class="theme-toggle-track" aria-hidden="true"><span class="theme-toggle-thumb"></span></span>
             <span id="themeToggleText">Dark mode</span>
           </button>
         </div>
-        <div class="progress-ring" aria-label="Completion progress">
-          <span id="progressPercent">0%</span>
-          <small>Complete</small>
+        <div class="user-panel">
+          <div class="progress-ring" aria-label="Completion progress">
+            <span id="progressPercent">0%</span>
+            <small>Complete</small>
+          </div>
+          <div class="signed-in">
+            <strong id="currentUserName">User</strong>
+            <span id="currentUserEmail"></span>
+            <button class="ghost-button" id="logoutButton" type="button">Logout</button>
+          </div>
         </div>
       </section>
 
@@ -50,10 +97,31 @@
         </div>
       </section>
 
+      <section class="mode-panel" aria-label="Workspace mode">
+        <div class="segmented-control">
+          <button class="segment-button active" id="personalModeButton" type="button" data-view="personal">Personal</button>
+          <button class="segment-button" id="sharedModeButton" type="button" data-view="shared">Shared</button>
+        </div>
+
+        <div class="shared-tools" id="sharedTools" hidden>
+          <select id="sharedListSelect" aria-label="Select shared list"></select>
+
+          <form id="createSharedForm" class="inline-form">
+            <input id="sharedListName" type="text" maxlength="90" placeholder="New shared list" />
+            <button class="ghost-button" type="submit">Create</button>
+          </form>
+
+          <form id="joinSharedForm" class="inline-form">
+            <input id="joinCode" type="text" maxlength="16" placeholder="Access code" />
+            <button class="ghost-button" type="submit">Join</button>
+          </form>
+        </div>
+      </section>
+
       <section class="workspace">
         <aside class="task-editor" aria-labelledby="formTitle">
           <div class="section-heading">
-            <p class="eyebrow">Task details</p>
+            <p class="eyebrow" id="formContext">Personal task</p>
             <h2 id="formTitle">Add Task</h2>
           </div>
 
@@ -94,10 +162,15 @@
         <section class="task-board" aria-labelledby="boardTitle">
           <div class="board-topline">
             <div class="section-heading">
-              <p class="eyebrow">Live list</p>
+              <p class="eyebrow" id="boardContext">Personal list</p>
               <h2 id="boardTitle">Tasks</h2>
             </div>
             <button class="icon-button" id="refreshButton" type="button" title="Refresh tasks" aria-label="Refresh tasks">&#8635;</button>
+          </div>
+
+          <div class="shared-access" id="sharedAccess" hidden>
+            <span>Access code</span>
+            <strong id="activeAccessCode"></strong>
           </div>
 
           <div class="controls" aria-label="Task filters">

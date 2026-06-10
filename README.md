@@ -8,6 +8,10 @@ A full-stack task manager web application for tracking current work, completed w
 - Edit any existing task.
 - Mark tasks as completed or reopen them.
 - Delete tasks.
+- Register and log in with a personal account.
+- Keep personal tasks private to the signed-in user.
+- Create shared task lists with an access code.
+- Join shared lists and collaborate on shared tasks.
 - Search and filter tasks by status and priority.
 - View progress statistics.
 - Persist tasks in PostgreSQL so saved work survives web-service redeploys.
@@ -50,7 +54,14 @@ http://localhost:3000
 
 | Method | Endpoint | Purpose |
 | --- | --- | --- |
-| `GET` | `/api/tasks` | Fetch all tasks |
+| `POST` | `/api/auth/register` | Create an account |
+| `POST` | `/api/auth/login` | Log in |
+| `POST` | `/api/auth/logout` | Log out |
+| `GET` | `/api/auth/me` | Fetch current session user |
+| `GET` | `/api/shared-lists` | Fetch shared lists for the user |
+| `POST` | `/api/shared-lists` | Create a shared list |
+| `POST` | `/api/shared-lists/join` | Join a shared list by access code |
+| `GET` | `/api/tasks` | Fetch personal or shared tasks |
 | `GET` | `/api/health` | Confirm the database is connected |
 | `POST` | `/api/tasks` | Create a task |
 | `PUT` | `/api/tasks/:id` | Update a task |

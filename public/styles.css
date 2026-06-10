@@ -76,6 +76,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -103,6 +107,72 @@ button {
   padding: 32px 0 44px;
 }
 
+.auth-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 440px);
+  gap: 22px;
+  width: min(980px, calc(100% - 32px));
+  min-height: 100vh;
+  align-items: center;
+  margin: 0 auto;
+  padding: 32px 0;
+}
+
+.auth-hero,
+.auth-panel,
+.mode-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--panel-shadow);
+}
+
+.auth-hero {
+  min-height: 420px;
+  padding: 32px;
+  color: #f8fbfb;
+  background:
+    linear-gradient(135deg, rgba(17, 94, 89, 0.96), rgba(37, 99, 235, 0.78)),
+    url("data:image/svg+xml,%3Csvg width='900' height='320' viewBox='0 0 900 320' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.22'%3E%3Cpath d='M80 250 C180 140 240 280 340 150 S520 160 640 80 780 60 840 120'/%3E%3Cpath d='M40 95 H220 M280 95 H420 M500 95 H700'/%3E%3Cpath d='M130 45 v210 M450 35 v220 M720 65 v150'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: cover;
+  background-position: center;
+}
+
+.auth-panel {
+  padding: 22px;
+}
+
+.auth-tabs,
+.segmented-control {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 5px;
+  background: var(--input);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.tab-button,
+.segment-button {
+  min-height: 40px;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  font-weight: 900;
+}
+
+.tab-button.active,
+.segment-button.active {
+  color: #ffffff;
+  background: var(--teal);
+}
+
+.auth-form {
+  margin-top: 18px;
+}
+
 .hero-band {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -117,6 +187,24 @@ button {
   background-position: center;
   border-radius: 8px;
   box-shadow: var(--shadow);
+}
+
+.user-panel {
+  display: grid;
+  gap: 14px;
+  justify-items: center;
+}
+
+.signed-in {
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  color: #f8fbfb;
+}
+
+.signed-in span {
+  color: rgba(248, 251, 251, 0.76);
+  font-size: 0.9rem;
 }
 
 .eyebrow {
@@ -222,6 +310,34 @@ h2 {
   grid-template-columns: repeat(4, 1fr);
   gap: 14px;
   margin: 18px 0;
+}
+
+.mode-panel {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 12px;
+  align-items: center;
+  margin: 0 0 18px;
+  padding: 14px;
+}
+
+.shared-tools {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) minmax(220px, 1fr) minmax(180px, 0.8fr);
+  gap: 10px;
+}
+
+.inline-form {
+  display: flex;
+  gap: 8px;
+}
+
+.inline-form input {
+  min-width: 0;
+}
+
+.inline-form .ghost-button {
+  min-width: 82px;
 }
 
 .stat-block {
@@ -351,6 +467,25 @@ textarea:focus {
   align-items: start;
   justify-content: space-between;
   gap: 12px;
+}
+
+.shared-access {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  margin: 0 0 14px;
+  padding: 6px 10px;
+  color: var(--pill-text);
+  background: var(--pill);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.shared-access strong {
+  color: var(--teal-dark);
+  letter-spacing: 0.08em;
 }
 
 .icon-button {
@@ -526,8 +661,11 @@ textarea:focus {
 }
 
 @media (max-width: 900px) {
+  .auth-shell,
   .hero-band,
-  .workspace {
+  .workspace,
+  .mode-panel,
+  .shared-tools {
     grid-template-columns: 1fr;
   }
 
